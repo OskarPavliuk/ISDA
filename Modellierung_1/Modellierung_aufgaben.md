@@ -20,7 +20,6 @@ Modellieren Sie die Aussage aus Aufgabe 1.1 nun ohne Nutzung von komplexen Attri
 
 ![image.png](assets_2/aufgabe_1.png)
 
-
 * **Buch**: Die ISBN ist ein geeigneter Schlüssel für die Entität "Buch", da jede ISBN einzigartig ist und jedes Buch eindeutig identifizieren kann.
 * **Autor**: Die E-Mail-Adresse ist ein geeigneter Schlüssel für die Entität "Autor", da sie einzigartig für jeden Autor ist und somit zur eindeutigen Identifikation verwendet werden kann.
 
@@ -42,8 +41,6 @@ Modellieren Sie die Aussage aus Aufgabe 1.1 nun ohne Nutzung von komplexen Attri
   * Diese Beziehung ist eine M:N-Beziehung (viele-zu-viele).
 
 ---
-
-
 
 ## Aufgabe 2: ER-Modelle
 
@@ -89,3 +86,13 @@ Zur Modellierung des gegebenen Szenarios, in dem Gebäude mit Baujahr und Adress
 
 * **Beinhaltet**
   * Eine 1:N-Beziehung zwischen Gebäude und Raum: Ein Gebäude kann mehrere Räume enthalten, aber jeder Raum gehört zu genau einem Gebäude.
+
+---
+
+
+
+## Aufgabe 4: Kino
+
+Die Chefin der Kinokette CineKinoSpielhaus möchte gerne zur Effizienzsteigerung ihr Kino-Business digital abbilden. Sie hat dafür Statements von verschiedenen Personen eingeholt und einen Gebäudeplan als grundlegende Ressourcen bereitgestellt und beauftragt nun Sie, ein entsprechendes vollständiges ER-Modell zu erstellen. So wie im echten Leben auch sind nicht alle Sachverhalte bis ins feinste Detail beschrieben. Ergänzen Sie ggf. fehlende Eigenschaften wie Totalitäten und Kardinalitäten durch schlüssiges Denken und notieren Sie sich Ihre Herangehensweise und Grundannahmen.
+
+![image.png](assets_2/aufgabe_4.png)
