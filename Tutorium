@@ -1,0 +1,122 @@
+/* Aufgabe 1
+Formulieren Sie zu den folgenden Aussagen passende SQL-DQL Anfragen */
+
+/* 1.1 Alle Studierenden */
+
+SELECT *
+FROM studenten;
+
+/* 1.2 Die Namen der Studierenden, die im zweiten Semester sind. */
+SELECT name
+FROM studenten
+WHERE semester = 2;
+
+
+/* 1.3 Die Namen aller Studierenden und die Vorlesungsnummern, die Sie hören.
+Hört eine studierende Person keine Vorlesung, so soll diese Person nicht in der Ergebnisrelation auftauchen */
+SELECT name, vorlnr
+FROM studenten
+         INNER JOIN hoeren ON studenten.matrnr = hoeren.matrnr;
+
+/* 1.4 Die Namen aller Studierenden, die keine Vorlesung besuchen */
+
+SELECT name
+FROM studenten
+WHERE name not in (SELECT name
+                   FROM studenten
+                            INNER JOIN hoeren on studenten.matrnr = hoeren.matrnr);
+
+
+/* 1.5 Die Namen aller Studierenden und Professor*innen */
+SELECT name
+from studenten
+union
+SELECT name
+from professoren;
+
+
+/* 1.6 Die Matrikelnummern aller Studierenden und die Anzahl der von ihnen besuchten Vorlesungen.
+Geben Sie nur Studierende aus, welche mindestens 3 Vorlesungen besuchen.  */
+
+SELECT studenten.matrnr, Count(studenten.matrnr) as Anzahl
+FROM studenten
+         inner join hoeren on studenten.matrnr = hoeren.matrnr
+GROUP BY studenten.matrnr
+HAVING COUNT(studenten.matrnr) >= 3
+ORDER BY Anzahl DESC;
+
+
+/* 1.7.1 Bestimmen Sie im ersten Schritt nur die Matrikelnummern aller
+Studierenden und die Anzahl der von ihnen besuchten Vorlesungen,
+wenn diese Studierenden mindestens eine Vorlesung besuchen.
+Geben Sie die Ergebnisinstanzen absteigend sortiert nach der Anzahl der besuchten Vorlesungen an.*/
+SELECT studenten.matrnr, Count(studenten.matrnr) as Anzahl
+FROM studenten
+         full outer join hoeren on studenten.matrnr = hoeren.matrnr
+group by studenten.matrnr
+HAVING COUNT(studenten.matrnr) >= 1
+ORDER BY Anzahl DESC;
+
+
+/* 1.7.2 Bestimmen Sie nun die Matrikelnummern aller Studierenden, welche keine Vorlesungen besuchen,
+und gebe sie die Matrikelnummer aus zusammen mit dem Wert 0 in einer Spalte Anzahl */
+SELECT studenten.matrnr, 0 as Anzahl
+FROM studenten
+WHERE NOT EXISTS (SELECT studenten.matrnr FROM hoeren WHERE hoeren.matrnr = studenten.matrnr);
+
+
+/* 1.7.3 Die Matrikelnummern aller Studierenden und die Anzahl der von ihnen besuchten Vorlesungen.
+Auch Studierende, die keine Vorlesungen besuchen, sollen ausgegeben werden.
+Geben Sie die Ergebnis-Instanzen absteigend sortiert nach der Anzahl der besuchten Vorlesungen an */
+SELECT studenten.matrnr, COUNT(hoeren.matrnr) AS Anzahl
+FROM studenten
+         FULL OUTER JOIN hoeren ON studenten.matrnr = hoeren.matrnr
+GROUP BY studenten.matrnr
+ORDER BY Anzahl DESC;
+
+
+/* 1.8 Geben Sie die Namen der Vorlesungen an, welche keine Nachfolgevorlesungen haben.*/
+SELECT DISTINCT vorlesungen.vorlnr
+FROM vorlesungen
+WHERE vorlesungen.vorlnr NOT IN (SELECT vorlesungen.vorlnr
+                                 FROM vorlesungen
+                                          JOIN voraussetzen ON voraussetzen.vorgaenger = vorlesungen.vorlnr)
+
+
+/* 1.9 Die Namen von Professoren und Professorinnen und die Durchschnittsnote,
+welche Studierende bei diesen erzielen. Sortieren Sie das Ergebnis absteigend nach der Durchschnittsnote */
+SELECT professoren.name, AVG(note) as Durchschnittsnote
+FROM professoren
+         join pruefen
+              on professoren.persnr = pruefen.persnr
+GROUP BY name
+ORDER BY Durchschnittsnote DESC;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
