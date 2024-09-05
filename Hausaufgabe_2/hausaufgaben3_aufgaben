@@ -1,0 +1,129 @@
+Implementieren Sie die Funktion pkw_max_velocity_per_lane, die eine Dataflow-Pipeline mit folgendem Ergebnis erstellt:
+
+Die laufende maximale Geschwindigkeit eines PKWs pro Autobahnspur.
+
+Erwartete Elementstruktur pro Autobahnspur (lane) im Ausgabestrom:
+rolling_pkw_max_velocity
+
+def pkw_max_velocity_per_lane(input_stream: TimedStream) -> Any:
+    return (input_stream
+        .filter(lambda x: x[2] == "pkw") # nach PKW sortieren
+        .key_by(lambda x: x[0]) # key_by lane
+        .reduce(lambda x, y: x if x[1] > y[1] else y) # Die laufende maximale Geschwindigkeit
+        .map(lambda x: x[1])) # map Geschwindigkeit
+
+----------------------------------------------------
+
+Implementieren Sie die Funktion lkw_ratio, die eine Dataflow-Pipeline mit folgendem Ergebnis erstellt:
+
+Den Anteil der LKWs an allen Fahrzeugen pro Spur lane in Prozent. Berechnen Sie den Anteil nur für die erste und zweite Spur und runden Sie die Prozentzahl, mit Hilfe der round(Zahl, Nachkommastellen) Funktion von Python, auf zwei Nachkommastellen.
+
+Erwartete Elementstruktur pro Spur (lane) im Ausgabestrom:
+(ratio_in_percent)
+
+def lkw_ratio(input_stream: TimedStream) -> Any:
+    return (input_stream.filter(lambda x: x[0] in [1, 2]) # nach lane 1 und 2 sortieren
+            .key_by(lambda x: x[0]) # key_by lane
+            .map(lambda x: (x[0], x[2] == "lkw", 1)) #  # Erstellt ein Tupel (lane, ob lkw, 1)
+            .reduce(lambda x, y: (x[0], x[1] + y[1], x[2] + y[2])) # Aggregiert die Anzahl LKWs und Gesamtfahrzeuge
+            .map(lambda x: round((x[1] / x[2]) * 100, 2))) # Berechnet und rundet den LKW-Anteil in Prozent
+
+----------------------------------------------------
+
+
+Implementieren Sie die Funktion lane_2_min_mean_velocity_100_cars, die eine Dataflow-Pipeline mit folgendem Ergebnis erstellt:
+
+Der minimale Wert der durchschnittlichen Geschwindigkeiten (mean_velocity) von 10 Autos auf der mittleren Fahrspur aus den letzten 100 Autos. Diese Statistik soll alle 50 Autos aktualisiert werden.
+
+Erwartete Elementstruktur im Ausgabestrom:
+(min_mean_velocity)
+
+
+def calculate_mean(window):
+    result = []
+    # Berechnet den Durchschnitt von jedem 10-Element-Fenster im Fenster
+    for i in range(0, len(window), 10):
+        sum_of_elements = sum(window[i:i+10])
+        mean_of_elements = (sum_of_elements / 10)
+        result.append(mean_of_elements)
+    return result
+
+def lane_2_min_mean_velocity_100_cars(input_stream: TimedStream) -> Any:
+    return (input_stream
+            .filter(lambda x: x[0] == 2) # Filtert nur Fahrzeuge auf Spur 2
+            .map(lambda x: x[1]) # Extrahiert die Geschwindigkeit
+            .sliding_tuple_window(size=100, slide=50) # Fenstergröße 100 Autos, aktualisiert alle 50 Autos
+            .apply(lambda window: min(calculate_mean(window))) # Berechnet den minimalen Durchschnittswert aus 10-Auto-Fenstern
+            .map(lambda x: x[0])) # Extrahiert den minimalen Durchschnittswert
+
+
+----------------------------------------------------
+
+Implementieren Sie die Funktion traffic_density, die eine Dataflow-Pipeline mit folgendem Ergebnis erstellt:
+
+Die Verkehrsdichte traffic_density, also die Anzahl der Fahrzeuge pro Kilometer. Die Verkehrsdichte lässt sich mithilfe der Verkehrsstärke (traffic_intensity) berechnen, welche die Anzahl der Fahrzeuge pro Stunde angibt. Zusammen mit der durchschnittlichen Geschwindigkeit (avg_velocity) dieser Fahrzeuge, kann die Verkehrsdichte berechnet werden (traffic_density = traffic_intensity / avg_velocity). Die entsprechende Statistik soll alle 60 Minuten aktualisiert werden.
+
+Erwartete Elementstruktur im Ausgabestrom:
+(traffic_density, window_start, window_end)
+
+def traffic_density(input_stream: TimedStream) -> Any:
+    return (input_stream
+        .tumbling_time_window(3600.0) # pro Stunde
+        .apply(lambda window:((len(window) / (sum(x[1] for x in window) / len(window))))))
+        # traffic_density = traffic_intensity / avg_velocity
+
+----------------------------------------------------
+
+
+Implementieren Sie die Funktion approx_brand_count, die eine Dataflow-Pipeline mit folgendem Ergebnis erstellt:
+
+Eine Schätzung für die Anzahl der PKWs pro Spur (lane) und PKW Marke (brand) pro Stunde. Diese Statistik muss alle 30 Minuten aktualisiert werden.
+Das Erkennungsmerkmal für ein Fahrzeug ist ein String und soll dabei folgender Maßen aufgebaut werden: "brand_lane".
+Beispiel:
+Das Fahrzeug mit dem Tupel (2.0, 180.0, "pkw", "VW") hat das Erkennungsmerkmal "VW_2".
+
+Benutzen Sie dafür eine geeignete Datenstruktur, die mit einer unbekannten Anzahl von Marken brand und Spuren lane umgehen kann. Das bedeutet konkret, dass Ihre Datenstruktur nicht beliebig mit der Menge der vorkommenden Marken wachsen darf. Gehen Sie davon aus, dass wir Ihre Pipeline mit beliebigen Werten für brand testen werden.
+
+Implementieren Sie danach die Funktion query_brand_and_lane, die den Ausgabestrom von approx_brand_count verarbeitet und pro Fenster die Anzahl der PKWs einer gegebenen Marke brand einer gegebenen Spur lane berechnet. Beachten Sie unseren Tipp für die Erstellung einer parametrisierten Dataflow-Pipeline.
+
+Erwartete Elementstruktur im Ausgabestrom von approx_brand_count:
+(approx_data_structure, window_start, window_end)
+
+Erwartete Elementstruktur im Ausgabestrom von query_brand_and_lane:
+(approx_n_cars, window_start, window_end)
+
+Tipp: Achten Sie darauf, das die lane vom Typ Float ist, aber im Erkennungsmerkmal kein Punkt oder Nachkommastelle zu finden sein sollte! Nutzen Sie zum Beispiel folgende Typ-Umwandlung, um den Float 2.0 in den String "2" umzuwandeln: str(int(2.0))
+
+Tipp: Um Ihre Dataflow-Pipeline zu parametrisieren, können Sie Ihre Funktionen erster Ordnung innerhalb des Körpers Ihrer Hauptfunktion implementieren. Beispiel:
+
+``` 
+
+def pipeline_function(input_stream, special_parameter):
+        def first_order_fn(element):
+            if element == special_parameter:
+                return True
+            else:
+                return False
+   
+        return input_stream.filter(first_order_fn)
+
+```
+
+
+Lösung:
+def approx_brand_count(input_stream: TimedStream) -> DataStream:
+    def fuktion(window):
+        count_min_sketch = CountMinSketch(40, 3) # Initialisiert Count-Min Sketch mit Breite 40 und Tiefe 3
+        for x in window:
+            count_min_sketch.update(x[3] + "_" + str(int(x[0]))) # Aktualisiert den CMS
+        return (count_min_sketch)
+
+    return (input_stream
+            .filter(lambda x: x[2] == "pkw") # Filtert nur PKWs
+            .sliding_time_window(3600, 1800) # Erzeugt Zeitfenster von einer Stunde, alle 30 Minuten aktualisiert
+            .apply(fuktion))
+
+def query_brand_and_lane(approx_brand_count: DataStream, brand: str, lane: int) -> Any:
+    return approx_brand_count.map(lambda tup: (tup[0].query(brand + "_" + str((lane))), tup[1], tup[2]))
+
+
