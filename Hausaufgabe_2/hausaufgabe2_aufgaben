@@ -1,0 +1,403 @@
+Formulieren Sie einen SQL-Ausdruck, der aequivalent zu folgender Aussage ist:
+
+Den Familiennamen und den Vornamen aller weiblichen Spielerinnen.
+
+Geben Sie nur die ersten 10 Zeilen aus. Haengen Sie dafuer LIMIT 10 an Ihre Query ran.
+
+Ergebnisschema:
+
+Spieler_ID (↓), Familienname, Vorname
+
+SELECT Spieler.Spieler_ID, Spieler.Familienname, Spieler.Vorname
+FROM Spieler
+WHERE Spieler.Weiblich = 1
+ORDER BY Spieler.Spieler_ID DESC
+LIMIT 10;
+
+--------------------------------------
+
+Formulieren Sie einen SQL-Ausdruck, der aequivalent zu folgender Aussage ist:
+
+Die Anzahl an Torhueter*innen, Verteidiger*innen, Mittelfeldspieler*innen und Stuermer*innen, bei denen der erste Familiennamen mit B anfaengt. Hinweis: Jede Anzahl muss zu einem INT128 gecastet werden.
+
+Ergebnisschema:
+
+Anzahl Torhueter, Anzahl Verteidiger, Anzahl Mittelfeldspieler, Anzahl Stuermer
+
+SELECT 
+    CAST(COUNT(Spieler.Spieler_ID) FILTER (WHERE Torhueter = 1 AND Familienname LIKE 'B%') AS HUGEINT) AS "Anzahl Torhueter",
+    CAST(COUNT(Spieler.Spieler_ID) FILTER (WHERE Verteidiger = 1 AND Familienname LIKE 'B%') AS HUGEINT) AS "Anzahl Verteidiger",
+    CAST(COUNT(Spieler.Spieler_ID) FILTER (WHERE Mittelfeldspieler = 1 AND Familienname LIKE 'B%') AS HUGEINT) AS "Anzahl Mittelfeldspieler",
+    CAST(COUNT(Spieler.Spieler_ID) FILTER (WHERE Stuermer = 1 AND Familienname LIKE 'B%') AS HUGEINT) AS "Anzahl Stuermer"
+FROM  Spieler;
+
+--------------------------------------
+
+Formulieren Sie einen SQL-Ausdruck, der aequivalent zu folgender Aussage ist:
+
+Den Mannschaftsnamen und den Mannschaftscode aller europaeischen Teams.
+
+Geben Sie nur die ersten 10 Zeilen aus. Haengen Sie dafuer LIMIT 10 an Ihre Query ran.
+
+Ergebnisschema:
+
+Mannschafts_ID (↓), Mannschaftsname, Mannschaftscode
+
+SELECT Mannschaften.Mannschafts_ID, Mannschaften.Mannschaftsname, Mannschaften.Mannschaftscode
+FROM Mannschaften
+WHERE Mannschaften.Regionname = 'Europe'
+ORDER BY Mannschaften.Mannschafts_ID DESC
+LIMIT 10;
+
+--------------------------------------
+
+
+Formulieren Sie einen SQL-Ausdruck, der aequivalent zu folgender Aussage ist:
+
+Alle Vor- und Nachnamen von Torhueter*innen, welche Turniere gespielt haben.
+
+Geben Sie nur die ersten 10 Zeilen aus. Haengen Sie dafuer LIMIT 10 an Ihre Query ran.
+
+Ergebnisschema:
+
+Turnieranzahl (↓), Spieler_ID (↓), Familienname, Vorname
+
+
+SELECT DISTINCT Spieler.Turnieranzahl, Spieler.Spieler_ID, Spieler.Familienname, Spieler.Vorname 
+FROM Spieler
+LEFT JOIN Spielerauftritte ON Spieler.Spieler_ID = Spielerauftritte.Spieler_ID
+WHERE Spieler.Torhueter = 1
+ORDER BY Spieler.Turnieranzahl DESC, Spieler.Spieler_ID DESC
+LIMIT 10;
+
+
+--------------------------------------
+
+
+Formulieren Sie einen SQL-Ausdruck, der aequivalent zu folgender Aussage ist:
+
+Alle Spieler*innen, welche auf mehr als zwei Positionen (Torhueter, Verteidiger, Mittelfeldspieler, Stuermer) gespielt haben. Hinweis: Die Anzahl muss zu einem INT64 gecastet werden
+
+Geben Sie nur die ersten 10 Zeilen aus. Haengen Sie dafuer LIMIT 10 an Ihre Query ran.
+
+Ergebnisschema:
+
+Spieler_ID (↓), Familienname, Vorname, positions_played (↑)
+
+SELECT Spieler.Spieler_ID, Spieler.Familienname, Spieler.Vorname,
+    CAST(
+        ((Spieler.Torhueter) +
+        (Spieler.Verteidiger) +
+        (Spieler.Mittelfeldspieler) +
+        (Spieler.Stuermer)) AS LONG
+    ) AS positions_played
+FROM Spieler
+WHERE positions_played > 2
+ORDER BY Spieler.Spieler_ID DESC, positions_played ASC
+LIMIT 10;
+
+--------------------------------------
+
+
+Formulieren Sie einen SQL-Ausdruck, der aequivalent zu folgender Aussage ist:
+
+Den Mannschaftsnamen und den Mannschaftscode von allen Teams, welche eine Damen- und Herrenmannschaft haben.
+
+Geben Sie nur die ersten 10 Zeilen aus. Haengen Sie dafuer LIMIT 10 an Ihre Query ran.
+
+Ergebnisschema:
+
+Mannschafts_ID (↑), Mannschaftsname, Mannschaftscode
+
+
+SELECT Mannschaften.Mannschafts_ID, Mannschaften.Mannschaftsname, Mannschaften.Mannschaftscode
+FROM Mannschaften
+WHERE Mannschaften.Herrenmannschaft = 1 AND Mannschaften.Damenmannschaft = 1
+ORDER BY Mannschaften.Mannschafts_ID
+LIMIT 10;
+
+
+--------------------------------------
+
+Formulieren Sie einen SQL-Ausdruck, der aequivalent zu folgender Aussage ist:
+
+Die Anzahl an Schiedsrichter*innen fuer jede Konfoederation.
+
+Ergebnisschema:
+
+Konfoederationsname (↑), Anzahl an Schiedsrichter
+
+SELECT      Konfoederationen.Konfoederationsname, 
+            COUNT(Konfoederationen.Konfoederations_ID) AS "Anzahl an Schiedsrichter" 
+FROM        Konfoederationen
+INNER JOIN  Schiedsrichter ON Konfoederationen.Konfoederations_ID = Schiedsrichter.Konfoederations_ID
+GROUP BY    Konfoederationen.Konfoederationsname
+ORDER BY    Konfoederationen.Konfoederationsname ASC;
+
+--------------------------------------
+
+
+Formulieren Sie einen SQL-Ausdruck, der aequivalent zu folgender Aussage ist:
+
+Alle Spieler*innen, welche mehr als 3 Spiele gespielt haben.
+
+Geben Sie nur die ersten 10 Zeilen aus. Haengen Sie dafuer LIMIT 10 an Ihre Query ran.
+
+Ergebnisschema:
+
+Spieler_ID (↓), Familienname, Vorname, Auftritte (↑)
+
+
+SELECT Spieler.Spieler_ID, Spieler.Familienname, Spieler.Vorname,
+       COUNT (Spieler.Spieler_ID) AS Auftritte
+FROM Spieler
+INNER JOIN Spielerauftritte ON Spieler.Spieler_ID = Spielerauftritte.Spieler_ID
+GROUP BY Spieler.Spieler_ID, Spieler.Familienname, Spieler.Vorname
+HAVING COUNT (Spieler.Spieler_ID) > 3
+ORDER BY Spieler.Spieler_ID DESC, Auftritte ASC
+LIMIT 10;
+
+
+--------------------------------------
+
+
+Formulieren Sie einen SQL-Ausdruck, der aequivalent zu folgender Aussage ist:
+
+Die Anzahl an Toren pro Spieler*in, welche/r als Torhueter*in gespielt hat.
+
+Geben Sie nur die ersten 10 Zeilen aus. Haengen Sie dafuer LIMIT 10 an Ihre Query ran.
+
+Ergebnisschema:
+
+Spieler_ID (↓), Familienname, Vorname, scored_Tore (↓)
+
+
+SELECT Spieler.Spieler_ID, Spieler.Familienname, Spieler.Vorname, COUNT(Tore.Spieler_ID) AS scored_Tore
+FROM Spieler
+INNER JOIN Tore ON Spieler.Spieler_ID = Tore.Spieler_ID
+Where Spieler.Torhueter = 1
+GROUP BY Spieler.Spieler_ID, Spieler.Familienname, Spieler.Vorname
+ORDER BY Spieler.Spieler_ID DESC, scored_Tore DESC
+LIMIT 10;
+
+--------------------------------------
+
+
+Formulieren Sie einen SQL-Ausdruck, der aequivalent zu folgender Aussage ist:
+
+Alle Spieler, welche in mind. einem K.O. Phasenspiel gespielt haben. Jeder Spieler soll nur einmal vorkommen (Hinweis: Keine Duplikate).
+
+Geben Sie nur die ersten 10 Zeilen aus. Haengen Sie dafuer LIMIT 10 an Ihre Query ran.
+
+Ergebnisschema:
+
+Spieler_ID (↓), Familienname, Vorname
+
+SELECT DISTINCT Spieler.Spieler_ID, Spieler.Familienname, Spieler.Vorname, 
+FROM Spieler
+INNER JOIN Spielerauftritte ON Spieler.Spieler_ID = Spielerauftritte.Spieler_ID
+INNER JOIN Spiele ON Spielerauftritte.Spiel_ID = Spiele.Spiel_ID
+WHERE KO_Phase = 1
+ORDER BY Spieler.Spieler_ID DESC
+LIMIT 10;
+
+--------------------------------------
+
+
+Formulieren Sie einen SQL-Ausdruck, der aequivalent zu folgender Aussage ist:
+
+Die durchschnittliche (average) Anzahl (pro Turnier) an Spieler*innen pro Position (GK, LB, CB, RB, ...). Mit der Position ist die genaue Position gemeint im Spiel, zum Beispiel CB, LB und NICHT nur Verteidiger.
+
+Geben Sie nur die ersten 10 Zeilen aus. Haengen Sie dafuer LIMIT 10 an Ihre Query ran.
+
+Ergebnisschema:
+
+Positionscode (↑), Average
+
+
+WITH TotalTournaments AS (
+    SELECT COUNT(DISTINCT Spielerauftritte.Turnier_ID) AS TotalTournaments
+    FROM Spielerauftritte
+),
+
+PlayersPerPosition AS (
+    SELECT DISTINCT Spielerauftritte.Positionscode, COUNT(Spielerauftritte.Positionscode) AS TotalPlayers
+    FROM Spielerauftritte
+    GROUP BY Spielerauftritte.Positionscode
+)
+
+SELECT PlayersPerPosition.Positionscode,
+CAST(PlayersPerPosition.TotalPlayers AS DOUBLE) / CAST(TotalTournaments.TotalTournaments AS DOUBLE) AS Average
+FROM PlayersPerPosition, TotalTournaments
+ORDER BY PlayersPerPosition.Positionscode ASC
+LIMIT 10;
+
+--------------------------------------
+
+
+Formulieren Sie einen SQL-Ausdruck, der aequivalent zu folgender Aussage ist:
+
+Alle Turniere, in denen weniger Tore erzielt wurden als der Durchschnitt aller Turniere, aber mind. ein Tor erzielt wurde.
+
+Geben Sie nur die ersten 10 Zeilen aus. Haengen Sie dafuer LIMIT 10 an Ihre Query ran.
+
+Ergebnisschema:
+
+Turnier_ID (↓), Tore_scored
+
+
+WITH TurnierTore AS (
+    SELECT Tore.Turnier_ID, COUNT(Tore.Turnier_ID) AS Tore_scored
+    FROM Tore
+    GROUP BY Tore.Turnier_ID
+),
+DurchschnittsTore AS (
+    SELECT AVG(Tore_scored) AS Durchschnitt
+    FROM TurnierTore
+)
+
+SELECT TurnierTore.Turnier_ID, TurnierTore.Tore_scored
+FROM TurnierTore, DurchschnittsTore
+WHERE TurnierTore.Tore_scored < DurchschnittsTore.Durchschnitt AND TurnierTore.Tore_scored >= 1
+ORDER BY TurnierTore.Turnier_ID DESC
+LIMIT 10;
+
+
+--------------------------------------
+
+
+Formulieren Sie einen SQL-Ausdruck, der aequivalent zu folgender Aussage ist:
+
+Die Anzahl an erzielten Toren pro Spieler*innen und Turnier, welche an mehr als zwei Turnieren teilgenommen haben
+
+Geben Sie nur die ersten 10 Zeilen aus. Haengen Sie dafuer LIMIT 10 an Ihre Query ran.
+
+Ergebnisschema:
+
+Spieler_ID (↓), Turniername (↑), Familienname, Vorname, scored_Tore (↑)
+
+
+SELECT Spieler.Spieler_ID, Turniere.Turniername, Spieler.Familienname, Spieler.Vorname, COUNT(Tore.Spieler_ID) AS scored_Tore
+FROM  Tore
+INNER JOIN  Spieler ON Tore.Spieler_ID = Spieler.Spieler_ID
+INNER JOIN  Turniere ON Tore.Turnier_ID = Turniere.Turnier_ID
+WHERE  Spieler.Spieler_ID IN (
+        SELECT Spielerauftritte.Spieler_ID
+        FROM Spielerauftritte
+        GROUP BY Spielerauftritte.Spieler_ID
+        HAVING COUNT(DISTINCT Turnier_ID) > 2
+    )
+GROUP BY  Spieler.Spieler_ID, Turniere.Turniername, Spieler.Familienname, Spieler.Vorname
+ORDER BY  Spieler.Spieler_ID DESC, Turniere.Turniername ASC, scored_Tore ASC
+LIMIT 10;
+
+
+--------------------------------------
+
+
+Formulieren Sie einen SQL-Ausdruck, der aequivalent zu folgender Aussage ist:
+
+Die Anzahl an weiblichen Spielerinnen pro Region.
+
+Geben Sie nur die ersten 10 Zeilen aus. Haengen Sie dafuer LIMIT 10 an Ihre Query ran.
+
+Ergebnisschema:
+
+Regionname (↑), Anzahl
+
+SELECT  Mannschaften.Regionname, COUNT(Spieler.Spieler_ID) AS Anzahl
+FROM  Spieler
+INNER JOIN  Spielerauftritte ON Spieler.Spieler_ID = Spielerauftritte.Spieler_ID
+INNER JOIN  Mannschaften ON Spielerauftritte.Mannschafts_ID = Mannschaften.Mannschafts_ID
+WHERE  Spieler.Weiblich = 1
+GROUP BY  Mannschaften.Regionname
+ORDER BY  Mannschaften.Regionname ASC
+LIMIT 10;  
+
+--------------------------------------
+
+
+Formulieren Sie einen SQL-Ausdruck, der aequivalent zu folgender Aussage ist:
+
+Die ID der Spieler*innen mit den meisten Spielauftritten pro Turnier. Hinweise: Zum Beispiel sollte unterschieden werden zwischen der WM 1990 und WM 1994.
+
+Geben Sie nur die ersten 10 Zeilen aus. Haengen Sie dafuer LIMIT 10 an Ihre Query ran.
+
+Ergebnisschema:
+
+Turnier_ID (↓), Spieler_ID (↓), played_Spiele
+
+
+WITH MaxSpielerauftritte AS (
+    SELECT Spielerauftritte.Turnier_ID, Spielerauftritte.Spieler_ID, COUNT(Spielerauftritte.Turnier_ID) AS played_Spiele
+    FROM Spielerauftritte
+    GROUP BY Spielerauftritte.Turnier_ID, Spielerauftritte.Spieler_ID
+),
+MaxSpielerProTurnier AS (
+    SELECT MaxSpielerauftritte.Turnier_ID, MAX(MaxSpielerauftritte.played_Spiele) AS max_played_Spiele
+    FROM MaxSpielerauftritte
+    GROUP BY MaxSpielerauftritte.Turnier_ID
+)
+SELECT MaxSpielerauftritte.Turnier_ID, MaxSpielerauftritte.Spieler_ID, MaxSpielerauftritte.played_Spiele
+FROM MaxSpielerauftritte
+INNER JOIN MaxSpielerProTurnier ON MaxSpielerauftritte.Turnier_ID = MaxSpielerProTurnier.Turnier_ID
+AND MaxSpielerauftritte.played_Spiele = MaxSpielerProTurnier.max_played_Spiele
+ORDER BY MaxSpielerauftritte.Turnier_ID DESC, MaxSpielerauftritte.Spieler_ID DESC
+LIMIT 10;
+
+
+--------------------------------------
+
+
+Formulieren Sie einen SQL-Ausdruck, der aequivalent zu folgender Aussage ist:
+
+Geben Sie die Namen aller Spieler*innen, welche in allen Turnieren getroffen haben. Hinweis: Gewollt sind NUR die Spieler*innen, welche sowohl bei dem maennlichen als auch den weiblichen Weltmeisterschaften getroffen haben.
+
+Geben Sie nur die ersten 10 Zeilen aus. Haengen Sie dafuer LIMIT 10 an Ihre Query ran.
+
+Ergebnisschema:
+
+Spieler_ID (↑), Familienname (↑), Vorname (↑)
+
+
+
+WITH AlleTurniere AS (
+    SELECT DISTINCT Tore.Turnier_ID
+    FROM Tore
+),
+SpielerMitTorenInAllenTurnieren AS (
+    SELECT Tore.Spieler_ID
+    FROM Tore
+    GROUP BY Tore.Spieler_ID
+    HAVING COUNT(DISTINCT Tore.Turnier_ID) = (SELECT COUNT(Turnier_ID) FROM AlleTurniere)
+)
+SELECT Spieler.Spieler_ID, Spieler.Familienname, Spieler.Vorname
+FROM Spieler
+INNER JOIN SpielerMitTorenInAllenTurnieren ON Spieler.Spieler_ID = SpielerMitTorenInAllenTurnieren.Spieler_ID
+ORDER BY Spieler.Spieler_ID ASC, Spieler.Familienname ASC, Spieler.Vorname ASC
+LIMIT 10;
+
+
+--------------------------------------
+
+Formulieren Sie einen SQL-Ausdruck, der aequivalent zu folgender Aussage ist:
+
+Geben Sie fuer alle Spieler*innen die Anzahl an erzielten Toren pro Turnier aus. Hinweise: Auch Spieler*innen, welche gespielt haben, aber keine Tore geschossen haben, sollen mit Null (0) Toren ausgegeben werden. Spieler*innen sollten nur im Ergebnis auftauchen, wenn diese in mindestens einem Spiel in einem Turnier gespielt haben.
+
+Geben Sie nur die ersten 10 Zeilen aus. Haengen Sie dafuer LIMIT 10 an Ihre Query ran.
+
+Ergebnisschema:
+
+scored_Tore (↓), Spieler_ID (↓), Turnier_ID (↑)
+
+SELECT COUNT(Tore.Spieler_ID) AS scored_Tore, Tore.Spieler_ID, Tore.Turnier_ID
+FROM Tore
+GROUP BY Tore.Spieler_ID, Tore.Turnier_ID
+ORDER BY scored_Tore DESC, Tore.Spieler_ID DESC, Tore.Turnier_ID ASC
+LIMIT 10;
+
+--------------------------------------
+
+
+
+
